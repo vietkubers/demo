@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  SVC_ENDPOINT_USERS: http://10.152.183.100:5000
+  SVC_ENDPOINT_TODO: http://10.152.183.101:5001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-users
+spec:
+  selector:
+    matchLabels:
+      run: dep-users
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: dep-users
+    spec:
+      containers:
+      - name: todoapp-users
+        image: docker.io/tiendc/todo-app-users:1.0
+        ports:
+          - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: my-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-todo
+spec:
+  selector:
+    matchLabels:
+      run: dep-todo
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: dep-todo
+    spec:
+      containers:
+      - name: todoapp-todo
+        image: docker.io/tiendc/todo-app-todo:1.0
+        ports:
+          - containerPort: 5001
+        envFrom:
+        - configMapRef:
+            name: my-config
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc-users
+  labels:
+    run: dep-users
+spec:
+  type: NodePort
+  clusterIP: 10.152.183.100
+  selector:
+    run: dep-users
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc-todo
+  labels:
+    run: dep-todo
+spec:
+  type: NodePort
+  clusterIP: 10.152.183.101
+  selector:
+    run: dep-todo
+  ports:
+  - protocol: TCP
+    port: 5001
+    targetPort: 5001
+
