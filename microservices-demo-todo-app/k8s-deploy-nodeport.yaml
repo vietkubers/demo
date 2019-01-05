@@ -3,8 +3,8 @@ kind: ConfigMap
 metadata:
   name: my-config
 data:
-  SVC_ENDPOINT_USERS: http://10.152.183.100:5000
-  SVC_ENDPOINT_TODO: http://10.152.183.101:5001
+  SVC_ENDPOINT_USERS: http://10.0.2.15:32000
+  SVC_ENDPOINT_TODO: http://10.0.2.15:32001
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -28,6 +28,13 @@ spec:
         envFrom:
         - configMapRef:
             name: my-config
+        resources:
+          limits:
+            cpu: "1"
+            memory: 100Mi
+          requests:
+            cpu: 500m
+            memory: 50Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -51,6 +58,13 @@ spec:
         envFrom:
         - configMapRef:
             name: my-config
+        resources:
+          limits:
+            cpu: "1"
+            memory: 100Mi
+          requests:
+            cpu: 500m
+            memory: 50Mi
 ---
 kind: Service
 apiVersion: v1
@@ -60,13 +74,13 @@ metadata:
     run: dep-users
 spec:
   type: NodePort
-  clusterIP: 10.152.183.100
   selector:
     run: dep-users
   ports:
   - protocol: TCP
     port: 5000
     targetPort: 5000
+    nodePort: 32000
 ---
 kind: Service
 apiVersion: v1
@@ -76,11 +90,10 @@ metadata:
     run: dep-todo
 spec:
   type: NodePort
-  clusterIP: 10.152.183.101
   selector:
     run: dep-todo
   ports:
   - protocol: TCP
     port: 5001
     targetPort: 5001
-
+    nodePort: 32001
