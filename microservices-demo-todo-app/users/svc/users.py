@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 DB_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 with open('{}/db/users.json'.format(DB_PATH), "r") as jsf:
-    USERS_LIST = json.load(jsf)
+    USER_LIST = json.load(jsf)
     
     
 @app.route("/", methods=['GET'])
@@ -23,7 +23,7 @@ def root():
 @app.route('/users', methods=['GET'])
 def user_list():
     """Returns the list of users"""
-    resp = make_response(json.dumps(USERS_LIST, sort_keys=True, indent=4))
+    resp = make_response(json.dumps(USER_LIST, sort_keys=True, indent=4))
     resp.headers['Content-Type']="application/json"
     return resp
 
@@ -31,9 +31,9 @@ def user_list():
 @app.route('/users/<username>', methods=['GET'])
 def user_data(username):
     """Returns info about a specific user"""
-    if username not in USERS_LIST:
+    if username not in USER_LIST:
         return "User not found"
-    return jsonify(USERS_LIST[username])
+    return jsonify(USER_LIST[username])
 
 
 @app.route('/users/<username>/todo', methods=['GET'])
